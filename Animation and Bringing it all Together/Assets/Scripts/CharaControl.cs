@@ -5,13 +5,18 @@ using UnityEngine;
 public class CharaControl : MonoBehaviour{
 
 	CharacterController controller;
-	private float speed = 5f;
+	private float speed = 0.5f;
 	private float gravity = -0.2f;
     private Vector3 movement;
+    private Animator m_Animator;
+    float m_ForwardAmount;
+    float m_TurnAmount;
+    bool m_IsGrounded;
     
     // Start is called before the first frame update
     void Start(){
         controller = GetComponent<CharacterController>();
+        m_Animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -19,7 +24,6 @@ public class CharaControl : MonoBehaviour{
     	//check if on the ground
         if (controller.isGrounded){
         	movement = new Vector3(Input.GetAxis("Horizontal"), 0.0f, Input.GetAxis("Vertical"));
-        	movement = transform.TransformDirection(movement);
         } else {
         	//gravity
         	movement.y += gravity;
@@ -30,7 +34,17 @@ public class CharaControl : MonoBehaviour{
         } else if (Input.GetKey(KeyCode.E)){
         	transform.Rotate(new Vector3(0, 120, 0) * Time.deltaTime);
         }
-        //move
+        //move and animate
+        m_TurnAmount = Mathf.Atan2(movement.x, movement.z);
+        m_ForwardAmount = movement.z;
         controller.Move(movement * speed * Time.deltaTime);
+        UpdateAnimator(movement);
+    }
+
+    void UpdateAnimator(Vector3 move){
+        //tell animator to animate
+        m_Animator.SetFloat("Forward", m_ForwardAmount, 0.1f, Time.deltaTime);
+        m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
+        m_Animator.SetBool("OnGround", m_IsGrounded);
     }
 }
